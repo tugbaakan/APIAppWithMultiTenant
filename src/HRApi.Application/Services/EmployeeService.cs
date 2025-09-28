@@ -10,16 +10,31 @@ public class EmployeeService : IEmployeeService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly ITenantService _tenantService;
 
-    public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper)
+    public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper, ITenantService tenantService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _tenantService = tenantService;
     }
 
     public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
     {
         var employees = await _unitOfWork.Employees.GetAllAsync();
+        
+        // Apply tenant-specific filtering
+        var currentTenant = await _tenantService.GetCurrentTenantAsync();
+        if (currentTenant != null)
+        {
+            // Company2 should only return department managers
+            if (currentTenant.Name.Equals("Company2", StringComparison.OrdinalIgnoreCase))
+            {
+                employees = employees.Where(e => e.IsDepartmentManager);
+            }
+            // Company1 returns all employees (no additional filtering needed)
+        }
+        
         return _mapper.Map<IEnumerable<EmployeeDto>>(employees);
     }
 
