@@ -66,7 +66,7 @@ DECLARE @Employee6Id UNIQUEIDENTIFIER = NEWID();
 INSERT INTO Employees (Id, EmployeeNumber, FirstName, LastName, Email, PhoneNumber, HireDate, DepartmentId, PositionId, Status, EmploymentType, Salary, IsDepartmentManager, CreatedAt, IsDeleted)
 VALUES 
     (@Employee1Id, 'C2EMP001', 'David', 'Martinez', 'david.martinez@company2.com', '+1-555-2001', '2022-11-01', @ITDeptId, @TechLeadId, 1, 1, 115000, 1, GETUTCDATE(), 0),
-    (@Employee2Id, 'C2EMP002', 'Jennifer', 'Taylor', 'jennifer.taylor@company2.com', '+1-555-2002', '2023-01-15', @HRDeptId, @HRDirectorId, 1, 1, 95000, 1, GETUTCDATE(), 0),
+    (@Employee2Id, 'C2EMP002', 'Jennifer', 'Taylor', 'jennifer.taylor@company2.com', '+1-555-2002', '2020-01-15', @HRDeptId, @HRDirectorId, 1, 1, 95000, 1, GETUTCDATE(), 0),
     (@Employee3Id, 'C2EMP003', 'James', 'Anderson', 'james.anderson@company2.com', '+1-555-2003', '2023-02-20', @OperationsDeptId, @OpsManagerId, 1, 1, 75000, 1, GETUTCDATE(), 0),
     (@Employee4Id, 'C2EMP004', 'Lisa', 'Thompson', 'lisa.thompson@company2.com', '+1-555-2004', '2023-03-15', @SalesDeptId, @SalesRepId, 1, 1, 60000, 0, GETUTCDATE(), 0),
     (@Employee5Id, 'C2EMP005', 'Kevin', 'White', 'kevin.white@company2.com', '+1-555-2005', '2023-04-10', @ITDeptId, @DevOpsId, 1, 1, 85000, 0, GETUTCDATE(), 0),

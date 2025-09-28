@@ -14,7 +14,7 @@ public class TenantConfiguration
     public TenantType TenantType { get; set; } = TenantType.Standard;
     
     /// <summary>
-    /// The name of this tenant instance (for logging/display)
+    /// The unique name of this tenant instance (used for instance-specific customizations)
     /// </summary>
     public string InstanceName { get; set; } = "Default";
     
@@ -22,4 +22,15 @@ public class TenantConfiguration
     /// Optional description of this tenant
     /// </summary>
     public string? Description { get; set; }
+    
+    /// <summary>
+    /// Custom business rules specific to this tenant instance
+    /// Key-value pairs for flexible configuration
+    /// </summary>
+    public Dictionary<string, object> CustomRules { get; set; } = new();
+    
+    /// <summary>
+    /// Feature flags for this tenant
+    /// </summary>
+    public Dictionary<string, bool> FeatureFlags { get; set; } = new();
 }

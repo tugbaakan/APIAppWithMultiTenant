@@ -56,6 +56,7 @@ DECLARE @Employee2Id UNIQUEIDENTIFIER = NEWID();
 DECLARE @Employee3Id UNIQUEIDENTIFIER = NEWID();
 DECLARE @Employee4Id UNIQUEIDENTIFIER = NEWID();
 DECLARE @Employee5Id UNIQUEIDENTIFIER = NEWID();
+DECLARE @Employee6Id UNIQUEIDENTIFIER = NEWID();
 
 INSERT INTO Employees (Id, EmployeeNumber, FirstName, LastName, Email, PhoneNumber, HireDate, DepartmentId, PositionId, Status, EmploymentType, Salary, IsDepartmentManager, CreatedAt, IsDeleted)
 VALUES 
@@ -64,6 +65,7 @@ VALUES
     (@Employee3Id, 'C1EMP003', 'Emily', 'Davis', 'emily.davis@company1.com', '+1-555-1003', '2023-03-10', @FinDeptId, @FinAnalystId, 1, 1, 65000, 1, GETUTCDATE(), 0),
     (@Employee4Id, 'C1EMP004', 'Michael', 'Brown', 'michael.brown@company1.com', '+1-555-1004', '2023-04-05', @ITDeptId, @JuniorDevId, 1, 1, 55000, 0, GETUTCDATE(), 0),
     (@Employee5Id, 'C1EMP005', 'Sarah', 'Wilson', 'sarah.wilson@company1.com', '+1-555-1005', '2023-05-20', @MarketingDeptId, @MktSpecialistId, 1, 1, 60000, 1, GETUTCDATE(), 0);
+    (@Employee6Id, 'C1EMP006', 'Johanna', 'Cryptan', 'johanna.cryptan@company1.com', '+1-555-1006', '2023-06-17', @MarketingDeptId, @MktSpecialistId, 1, 3, 60000, 1, GETUTCDATE(), 0);
 
 -- Create Leave Balances for all employees and leave types
 INSERT INTO LeaveBalances (Id, EmployeeId, LeaveTypeId, Year, AllocatedDays, UsedDays, CarryForwardDays, CreatedAt, IsDeleted)

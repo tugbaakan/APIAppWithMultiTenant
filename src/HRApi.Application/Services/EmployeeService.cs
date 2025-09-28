@@ -1,5 +1,6 @@
 using AutoMapper;
 using HRApi.Application.DTOs.Employee;
+using HRApi.Application.Factories;
 using HRApi.Application.Interfaces;
 using HRApi.Domain.Configuration;
 using HRApi.Domain.Entities.HR;
@@ -15,34 +16,27 @@ public class EmployeeService : IEmployeeService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly TenantConfiguration _tenantConfig;
+    private readonly ITenantCustomizationStrategy _customizationStrategy;
 
     public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper, IOptions<TenantConfiguration> tenantConfig)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _tenantConfig = tenantConfig.Value;
+        
+        // Get the appropriate customization strategy for this tenant
+        var factory = new TenantCustomizationFactory();
+        _customizationStrategy = factory.GetStrategy(_tenantConfig);
     }
 
     public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
     {
         var employees = await _unitOfWork.Employees.GetAllAsync();
         
-        // Apply tenant-specific filtering based on tenant type
-        switch (_tenantConfig.TenantType)
-        {
-            case TenantType.Restricted:
-                // Restricted tenants should only return department managers
-                employees = employees.Where(e => e.IsDepartmentManager);
-                break;
-            case TenantType.Standard:
-            case TenantType.Enterprise:
-            case TenantType.Trial:
-            default:
-                // Standard, Enterprise, and Trial tenants return all employees (no additional filtering needed)
-                break;
-        }
+        // Apply tenant-specific filtering using strategy pattern
+        var filteredEmployees = _customizationStrategy.ApplyEmployeeFiltering(employees.AsQueryable());
         
-        return _mapper.Map<IEnumerable<EmployeeDto>>(employees);
+        return _mapper.Map<IEnumerable<EmployeeDto>>(filteredEmployees);
     }
 
     public async Task<EmployeeDto?> GetEmployeeByIdAsync(Guid id)
@@ -85,6 +79,9 @@ public class EmployeeService : IEmployeeService
 
         var employee = _mapper.Map<Employee>(createEmployeeDto);
         
+        // Apply tenant-specific creation rules
+        _customizationStrategy.ApplyEmployeeCreationRules(employee);
+        
         await _unitOfWork.Employees.AddAsync(employee);
         await _unitOfWork.SaveChangesAsync();
 
@@ -107,6 +104,9 @@ public class EmployeeService : IEmployeeService
         }
 
         _mapper.Map(updateEmployeeDto, existingEmployee);
+        
+        // Apply tenant-specific update rules
+        _customizationStrategy.ApplyEmployeeUpdateRules(existingEmployee);
         
         await _unitOfWork.Employees.UpdateAsync(existingEmployee);
         await _unitOfWork.SaveChangesAsync();
