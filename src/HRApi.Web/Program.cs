@@ -2,11 +2,10 @@ using HRApi.Application.Interfaces;
 using HRApi.Application.Mappings;
 using HRApi.Application.Services;
 using HRApi.Application.Validators;
+using HRApi.Domain.Configuration;
 using HRApi.Domain.Interfaces;
 using HRApi.Infrastructure.Data.Contexts;
 using HRApi.Infrastructure.Data.Repositories;
-using HRApi.Infrastructure.MultiTenant;
-using HRApi.Web.Middleware;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
@@ -24,38 +23,13 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateEmployeeDtoValidator>
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(EmployeeProfile), typeof(LeaveProfile));
 
-// Add Entity Framework contexts
-builder.Services.AddDbContext<MasterDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MasterConnection")));
+// Configure tenant settings
+builder.Services.Configure<TenantConfiguration>(
+    builder.Configuration.GetSection("TenantConfiguration"));
 
-// Add HTTP context accessor for tenant resolution
-builder.Services.AddHttpContextAccessor();
-
-// Add memory cache for tenant caching
-builder.Services.AddMemoryCache();
-
-// Register services
-builder.Services.AddScoped<ITenantService, TenantService>();
-builder.Services.AddScoped<TenantDbContextFactory>();
-
-// Register tenant-aware services using factory pattern
-builder.Services.AddScoped<HRDbContext>(serviceProvider =>
-{
-    var factory = serviceProvider.GetRequiredService<TenantDbContextFactory>();
-    
-    try 
-    {
-        return factory.CreateDbContextAsync().GetAwaiter().GetResult();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error creating tenant context: {ex.Message}");
-        // For now, return a context with default connection for debugging
-        var optionsBuilder = new DbContextOptionsBuilder<HRDbContext>();
-        optionsBuilder.UseSqlServer("Server=localhost\\MSSQLSERVER01;Database=HRApi_Tenant_Demo;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true");
-        return new HRDbContext(optionsBuilder.Options);
-    }
-});
+// Add Entity Framework context with single database
+builder.Services.AddDbContext<HRDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
@@ -65,10 +39,7 @@ builder.Services.AddScoped<ILeaveService, LeaveService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "HR API", Version = "v1", Description = "Multi-tenant HR Management API" });
-    
-    // Add custom header for tenant ID
-    c.OperationFilter<TenantHeaderOperationFilter>();
+    c.SwaggerDoc("v1", new() { Title = "HR API", Version = "v1", Description = "HR Management API" });
     
     // Include XML comments if available
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -107,9 +78,6 @@ app.UseHttpsRedirection();
 
 // Use CORS
 app.UseCors("AllowAll");
-
-// Add tenant resolution middleware
-app.UseMiddleware<TenantResolutionMiddleware>();
 
 // Add authentication and authorization (to be implemented later)
 // app.UseAuthentication();

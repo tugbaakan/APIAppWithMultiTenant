@@ -1,8 +1,12 @@
 using AutoMapper;
 using HRApi.Application.DTOs.Employee;
 using HRApi.Application.Interfaces;
+using HRApi.Domain.Configuration;
 using HRApi.Domain.Entities.HR;
+using HRApi.Domain.Enums;
 using HRApi.Domain.Interfaces;
+using Microsoft.Extensions.Options;
+
 
 namespace HRApi.Application.Services;
 
@@ -10,29 +14,32 @@ public class EmployeeService : IEmployeeService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    private readonly ITenantService _tenantService;
+    private readonly TenantConfiguration _tenantConfig;
 
-    public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper, ITenantService tenantService)
+    public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper, IOptions<TenantConfiguration> tenantConfig)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
-        _tenantService = tenantService;
+        _tenantConfig = tenantConfig.Value;
     }
 
     public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
     {
         var employees = await _unitOfWork.Employees.GetAllAsync();
         
-        // Apply tenant-specific filtering
-        var currentTenant = await _tenantService.GetCurrentTenantAsync();
-        if (currentTenant != null)
+        // Apply tenant-specific filtering based on tenant type
+        switch (_tenantConfig.TenantType)
         {
-            // Company2 should only return department managers
-            if (currentTenant.Name.Equals("Company2", StringComparison.OrdinalIgnoreCase))
-            {
+            case TenantType.Restricted:
+                // Restricted tenants should only return department managers
                 employees = employees.Where(e => e.IsDepartmentManager);
-            }
-            // Company1 returns all employees (no additional filtering needed)
+                break;
+            case TenantType.Standard:
+            case TenantType.Enterprise:
+            case TenantType.Trial:
+            default:
+                // Standard, Enterprise, and Trial tenants return all employees (no additional filtering needed)
+                break;
         }
         
         return _mapper.Map<IEnumerable<EmployeeDto>>(employees);
