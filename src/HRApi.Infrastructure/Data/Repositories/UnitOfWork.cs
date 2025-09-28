@@ -24,7 +24,7 @@ public class UnitOfWork : IUnitOfWork
         _context = context;
     }
 
-    public IRepository<Employee> Employees => _employees ??= new Repository<Employee>(_context);
+    public IRepository<Employee> Employees => _employees ??= new EmployeeRepository(_context);
     public IRepository<Department> Departments => _departments ??= new Repository<Department>(_context);
     public IRepository<Position> Positions => _positions ??= new Repository<Position>(_context);
     public IRepository<LeaveType> LeaveTypes => _leaveTypes ??= new Repository<LeaveType>(_context);
