@@ -50,11 +50,6 @@ public class HRDbContext : DbContext
                   .HasForeignKey(e => e.ParentDepartmentId)
                   .OnDelete(DeleteBehavior.Restrict);
                   
-            entity.HasOne(e => e.Manager)
-                  .WithMany()
-                  .HasForeignKey(e => e.ManagerId)
-                  .OnDelete(DeleteBehavior.NoAction);
-                  
             entity.HasIndex(e => e.Code).IsUnique();
         });
 
@@ -69,10 +64,6 @@ public class HRDbContext : DbContext
             entity.Property(e => e.MinSalary).HasColumnType("decimal(18,2)");
             entity.Property(e => e.MaxSalary).HasColumnType("decimal(18,2)");
             
-            entity.HasOne(e => e.Department)
-                  .WithMany()
-                  .HasForeignKey(e => e.DepartmentId)
-                  .OnDelete(DeleteBehavior.Restrict);
                   
             entity.HasIndex(e => e.Code).IsUnique();
         });

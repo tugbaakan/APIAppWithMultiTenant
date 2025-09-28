@@ -60,6 +60,8 @@ public class Employee : BaseEntity
     [MaxLength(500)]
     public string? Notes { get; set; }
     
+    public bool IsDepartmentManager { get; set; }
+    
     // Navigation properties
     public virtual Department Department { get; set; } = null!;
     public virtual Position Position { get; set; } = null!;

@@ -15,8 +15,6 @@ public class Position : BaseEntity
     [MaxLength(10)]
     public string? Code { get; set; }
     
-    public Guid DepartmentId { get; set; }
-    
     public decimal? MinSalary { get; set; }
     
     public decimal? MaxSalary { get; set; }
@@ -27,7 +25,6 @@ public class Position : BaseEntity
     public string? Level { get; set; } // Junior, Mid, Senior, etc.
     
     // Navigation properties
-    public virtual Department Department { get; set; } = null!;
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
     public Position()

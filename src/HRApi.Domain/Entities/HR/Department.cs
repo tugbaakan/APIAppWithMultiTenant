@@ -17,14 +17,11 @@ public class Department : BaseEntity
     
     public Guid? ParentDepartmentId { get; set; }
     
-    public Guid? ManagerId { get; set; }
-    
     public bool IsActive { get; set; }
     
     // Navigation properties
     public virtual Department? ParentDepartment { get; set; }
     public virtual ICollection<Department> SubDepartments { get; set; } = new List<Department>();
-    public virtual Employee? Manager { get; set; }
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
     public Department()

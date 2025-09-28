@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,11 +6,38 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HRApi.Infrastructure.Data.Migrations.HR
 {
     /// <inheritdoc />
-    public partial class InitialHRMigrationFixed : Migration
+    public partial class InitialHRMigrationClean : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Departments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Code = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    ParentDepartmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Departments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Departments_Departments_ParentDepartmentId",
+                        column: x => x.ParentDepartmentId,
+                        principalTable: "Departments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateTable(
                 name: "LeaveTypes",
                 columns: table => new
@@ -36,34 +63,6 @@ namespace HRApi.Infrastructure.Data.Migrations.HR
                 });
 
             migrationBuilder.CreateTable(
-                name: "Departments",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    Code = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
-                    ParentDepartmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ManagerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Departments", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Departments_Departments_ParentDepartmentId",
-                        column: x => x.ParentDepartmentId,
-                        principalTable: "Departments",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Positions",
                 columns: table => new
                 {
@@ -71,7 +70,6 @@ namespace HRApi.Infrastructure.Data.Migrations.HR
                     Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Code = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
-                    DepartmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MinSalary = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     MaxSalary = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
@@ -85,12 +83,6 @@ namespace HRApi.Infrastructure.Data.Migrations.HR
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Positions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Positions_Departments_DepartmentId",
-                        column: x => x.DepartmentId,
-                        principalTable: "Departments",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -116,6 +108,7 @@ namespace HRApi.Infrastructure.Data.Migrations.HR
                     EmploymentType = table.Column<int>(type: "int", nullable: false),
                     Salary = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    IsDepartmentManager = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -319,11 +312,6 @@ namespace HRApi.Infrastructure.Data.Migrations.HR
                 filter: "[Code] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Departments_ManagerId",
-                table: "Departments",
-                column: "ManagerId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Departments_ParentDepartmentId",
                 table: "Departments",
                 column: "ParentDepartmentId");
@@ -415,27 +403,11 @@ namespace HRApi.Infrastructure.Data.Migrations.HR
                 column: "Code",
                 unique: true,
                 filter: "[Code] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Positions_DepartmentId",
-                table: "Positions",
-                column: "DepartmentId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Departments_Employees_ManagerId",
-                table: "Departments",
-                column: "ManagerId",
-                principalTable: "Employees",
-                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Departments_Employees_ManagerId",
-                table: "Departments");
-
             migrationBuilder.DropTable(
                 name: "Evaluations");
 
@@ -455,10 +427,10 @@ namespace HRApi.Infrastructure.Data.Migrations.HR
                 name: "Employees");
 
             migrationBuilder.DropTable(
-                name: "Positions");
+                name: "Departments");
 
             migrationBuilder.DropTable(
-                name: "Departments");
+                name: "Positions");
         }
     }
 }
